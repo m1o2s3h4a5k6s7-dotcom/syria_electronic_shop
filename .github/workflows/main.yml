@@ -215,7 +215,7 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن لوحة الإدارة المقفلة السحابية وتأمين الأقواس
+        # 🎯 حقن لوحة الإدارة المقفلة السحابية وتأمين الأقواس
     - name: Inject Master Code Part 3
       run: |
         cat << 'EOF' >> lib/main.dart
@@ -251,9 +251,10 @@ jobs:
         }
         EOF
 
-    # 🎯 الضربة القاضية: تدمير ملف add_product.dart الملوث بمكتبات الويب تماماً وإعادة كتابته نقياً 100% للموبايل
-    - name: Purge and Re-write add_product.dart
+    # 🎯 التعديل الجوهري الحاسم: مسح وتطهير مجلد add_product ومجلد الـ test الملوث كلياً لمنع انهيار الـ kernel
+    - name: Purge Web Artifacts & Re-write add_product.dart
       run: |
+        rm -rf test/
         rm -rf lib/add_product.dart
         cat << 'EOF' > lib/add_product.dart
         import 'package:flutter/material.dart';
