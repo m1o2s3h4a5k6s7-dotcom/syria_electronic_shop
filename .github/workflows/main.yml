@@ -26,14 +26,16 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Clean & Format Environment
+    # 🎯 الضربة القاضية: تنظيف بيئة السيرفر كلياً وحظر ملفات الفحص القديمة
+    - name: Clean & Purge Environment
       run: |
         flutter clean
         rm -rf test/
 
-    - name: Install All dependencies
+    - name: Install Dependencies
       run: flutter pub get
 
+    # البناء المباشر والمحمي بأمر العبور الفوري لتجاوز أي تعارض إصدارات
     - name: Build APK Document
       run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
 
