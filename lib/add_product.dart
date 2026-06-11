@@ -1,3 +1,4 @@
+// 📸 مركز تجار متجر سوريا - الجزء الأول من ملف add_product.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 
 class AddProductScreen extends StatefulWidget {
   final Function(Map<String, dynamic>) onProductAdded;
-
   const AddProductScreen({super.key, required this.onProductAdded});
 
   @override
@@ -22,7 +22,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _notes = TextEditingController();
   String _cat = 'تجارة الحبوب بكافة أنواعها';
 
-  // ألبوم متوافق مع الموبايل والويب لحمل باقة الصور معاً دفعة واحدة
   List<String> _albumImages = [];
   bool _loading = false;
   final ImagePicker _picker = ImagePicker();
@@ -51,7 +50,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     super.dispose();
   }
 
-  // 🎯 الحل السحري النهائي: استدعاء الألبوم بصيغة الموبايل النقية المتوافقة مع تجميع الـ APK
+  // ميزة فتح ألبوم الاستوديو الحقيقي للموبايل وسحب باقة الصور معاً دفعة واحدة
   Future<void> _pickBulkImagesFromStudio() async {
     try {
       final List<XFile> pickedFiles = await _picker.pickMultiImage();
@@ -59,7 +58,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
         setState(() => _albumImages.clear());
         for (var file in pickedFiles) {
           final bytes = await file.readAsBytes();
-          // تحويل فوري لكتل الصور البرمية لتخزينها محلياً وبثبات كامل
           String base64Image = "data:image/png;base64,${base64Encode(bytes)}";
           setState(() {
             _albumImages.add(base64Image);
@@ -82,7 +80,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A252F),
+                color: Color(0xFF1E293B),
               ),
               textAlign: TextAlign.center,
             ),
@@ -109,7 +107,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             TextFormField(
               controller: _price,
-              decoration: const InputDecoration(labelText: 'السعر النهائي ל.ס'),
+              decoration: const InputDecoration(labelText: 'السعر النهائي ل.س'),
             ),
             TextFormField(
               controller: _merchantPhone,
@@ -127,13 +125,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 labelText: 'ملاحظات وضمانات اختيارية',
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             ElevatedButton.icon(
               onPressed: _pickBulkImagesFromStudio,
               icon: const Icon(Icons.collections, color: Colors.white),
               label: const Text(
-                '📸 افتح الاستوديو وحدد باقة الصور معاً بضغطة واحدة',
+                '📸 افتح الاستوديو وحدد باقة الصور معاً',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -204,7 +202,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
             const SizedBox(height: 15),
 
             _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.orange),
+                  )
                 : ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
@@ -230,18 +230,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         };
 
                         widget.onProductAdded(p);
-
-                        try {
-                          final msg =
-                              "مادة جديدة ⚡:\nالاسم: ${_title.text}\nالمحل: ${_shop.text}\nالسعر: ${_price.text}";
-                          await http
-                              .get(
-                                Uri.parse(
-                                  'https://allorigins.win{Uri.encodeComponent("https://telegram.org")}',
-                                ),
-                              )
-                              .timeout(const Duration(seconds: 2));
-                        } catch (_) {}
 
                         _title.clear();
                         _shop.clear();
