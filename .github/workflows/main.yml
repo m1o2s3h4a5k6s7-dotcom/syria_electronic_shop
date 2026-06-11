@@ -26,19 +26,15 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Clean & Prepare Environment
+    # 🎯 تدمير كلي لكافة الملفات القديمة والمجلدات الملوثة بالويب لضمان تصفير الكيرنل
+    - name: Hard Reset Environment
       run: |
         flutter clean
-        rm -rf test/
+        rm -rf android test lib
+        flutter create . --platforms android
+        rm -rf android/app/src/main/kotlin
+        mkdir -p lib
 
-    - name: Install All dependencies
-      run: flutter pub get
-
-    - name: Build APK Document
-      run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: syria-shop-app
-        path: build/app/outputs/flutter-apk/app-release.apk
+    # 🚀 حقن كود ملف main.dart بالكامل مشفراً ونقياً 100% بدون أي بتر للأقواس
+    - name: Inject Master main.dart
+      run: |
