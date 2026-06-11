@@ -26,14 +26,17 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير كافة الملفات القديمة والمشاكل المعلقة وإعادة إنشاء تطبيق فلاتر ناصع البياض كلياً
+    # 🎯 الضربة القاضية: تدمير كافة الملفات والمجلدات القديمة الملوثة وإعادة إنشاء مشروع فلاتر خام وجديد تماماً من الصفر
     - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
         rm -rf test/ lib/ android/ ios/ web/ windows/ linux/ macos/
         flutter create --org com.example --project-name syria_electronic_shop .
-    # 🎯 حقن كود ملف main.dart الرئيسي الكامل والمتوافق مع لغة جافا سحابياً
-    - name: Inject Master main.dart Code
+        rm -rf android/app/src/main/kotlin
+        mkdir -p lib
+
+    # حقن كود ملف main.dart الرئيسي الكامل والمتوافق مع لغة جافا سحابياً - الجزء أ
+    - name: Inject Master main.dart Code Part A
       run: |
         cat << 'EOF' > lib/main.dart
         import 'package:flutter/material.dart';
@@ -95,6 +98,11 @@ jobs:
             );
           }
         }
+        EOF
+    # حقن كود ملف main.dart الرئيسي الكامل والمتوافق مع لغة جافا سحابياً - الجزء ب
+    - name: Inject Master main.dart Code Part B
+      run: |
+        cat << 'EOF' >> lib/main.dart
 
         class ProductsCatalogScreen extends StatelessWidget {
           final bool isAdminView;
@@ -179,7 +187,7 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن ملف add_product.dart الصافي الخالي تماماً من مكتبات الويب للماكينات الحقيقية
+    # 🎯 حقن قسم البائع المطور والألبوم المفتوح الصريح (نقي 100% من استدعاءات الويب)
     - name: Inject Clean add_product.dart Code
       run: |
         cat << 'EOF' > lib/add_product.dart
@@ -266,7 +274,7 @@ jobs:
         }
         EOF
 
-    # حقن ملف جافا الموحد لتفادي تضارب ملحقات كوتلن على السيرفر تماماً
+    # 🎯 إطلاق ملف جافا السحابي النقي لتثبيت إعدادات الماكينة ونبذ تعارضات كوتلن
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
