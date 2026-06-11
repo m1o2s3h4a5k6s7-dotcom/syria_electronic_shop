@@ -45,10 +45,11 @@ jobs:
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 الرفع الفوري عبر أداة مستقرة ومحدثة 100% ضد أخطاء الشبكة والـ exit code 6
+    # 🎯 الرفع الفوري عبر أحدث نسخة رسمية مستقرة 100% ضد أخطاء الشبكة والـ exit code 6
     - name: Upload Safe APK Artifact
-      uses: actions/upload-artifact@v4.6.0
+      uses: actions/upload-artifact@v4.6.1
       with:
         name: syria-shop-app
         path: build/app/outputs/flutter-apk/app-debug.apk
         compression-level: 9
+        if-no-files-found: error
