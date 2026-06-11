@@ -26,24 +26,247 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 الضربة القاضية: تدمير كاش المخدم كلياً وتوليد مجرد مشروع فلاتر خام وجديد تماماً
+    # 🎯 تدمير كافة الملفات القديمة والمشاكل المعلقة وإعادة إنشاء تطبيق فلاتر ناصع البياض كلياً
     - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
         rm -rf test/ lib/ android/ ios/ web/ windows/ linux/ macos/
         flutter create --org com.example --project-name syria_electronic_shop .
-        rm -rf android/app/src/main/kotlin
-        mkdir -p lib
-    # 🎯 سحب وحقن كود ملف main.dart الأصلي المتكامل من روابط الخوادم الرسمية المستقرة
-    - name: Download Master main.dart Code
+    # 🎯 حقن كود ملف main.dart الرئيسي الكامل والمتوافق مع لغة جافا سحابياً
+    - name: Inject Master main.dart Code
       run: |
-        curl -sL "https://githubusercontent.com" > lib/main.dart
+        cat << 'EOF' > lib/main.dart
+        import 'package:flutter/material.dart';
+        import 'package:cloud_firestore/cloud_firestore.dart';
+        import 'package:firebase_core/firebase_core.dart';
+        import 'package:url_launcher/url_launcher.dart';
+        import 'dart:convert';
+        import 'add_product.dart';
 
-    # 🎯 سحب وحقن كود ملف add_product.dart الصافي للموبايل من الخوادم الرسمية المستقرة
-    - name: Download Clean add_product.dart Code
+        void main() async {
+          WidgetsFlutterBinding.ensureInitialized();
+          try { await Firebase.initializeApp(); } catch(_) {}
+          runApp(const SyriaStoreApp());
+        }
+
+        class SyriaStoreApp extends StatelessWidget {
+          const SyriaStoreApp({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return MaterialApp(
+              title: 'متجر سوريا الإلكتروني',
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                useMaterial3: true,
+                primaryColor: const Color(0xFF1E293B),
+                colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E293B), primary: const Color(0xFF1E293B), secondary: const Color(0xFFFF6B00)),
+                scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+              ),
+              home: const MainDashboardScreen(),
+            );
+          }
+        }
+
+        class MainDashboardScreen extends StatefulWidget {
+          const MainDashboardScreen({super.key});
+          @override
+          State<MainDashboardScreen> createState() => _MainDashboardScreenState();
+        }
+
+        class _MainDashboardScreenState extends State<MainDashboardScreen> {
+          int _selectedIndex = 0;
+          void _uploadProductToFirebase(Map<String, dynamic> product) async {
+            try { await FirebaseFirestore.instance.collection('products').add({...product, 'timestamp': FieldValue.serverTimestamp()}); } catch (_) {}
+          }
+          @override
+          Widget build(BuildContext context) {
+            final List<Widget> screens = [const ProductsCatalogScreen(isAdminView: false), AddProductScreen(onProductAdded: _uploadProductToFirebase), const AdminPanelScreen()];
+            return Scaffold(
+              appBar: AppBar(
+                title: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.storefront, color: Color(0xFFFF6B00)), SizedBox(width: 8), Text('مَتْجَر سُورْيَا الإلِكْترُونِي', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18))]),
+                centerTitle: true, backgroundColor: const Color(0xFF1E293B), elevation: 4,
+              ),
+              body: screens[_selectedIndex],
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: _selectedIndex, selectedItemColor: const Color(0xFFFF6B00), unselectedItemColor: const Color(0xFF64748B), backgroundColor: Colors.white, type: BottomNavigationBarType.fixed,
+                onTap: (index) => setState(() => _selectedIndex = index),
+                items: const [BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'العروض الحية'), BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline_rounded), label: 'أنا بائع'), BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), label: 'الإدارة')],
+              ),
+            );
+          }
+        }
+
+        class ProductsCatalogScreen extends StatelessWidget {
+          final bool isAdminView;
+          const ProductsCatalogScreen({super.key, required this.isAdminView});
+          void _openWhatsApp(String phone, String title) async {
+            final cleanPhone = phone.replaceAll(' ', '').replaceAll('+', '');
+            final url = "https://wa.me{Uri.encodeComponent('مرحباً، أنا مهتم بشراء سلعة: $title من متجر سوريا.')}";
+            if (await canLaunchUrl(Uri.parse(url))) { await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication); }
+          }
+          void _makeCall(String phone) async {
+            final url = "tel:$phone";
+            if (await canLaunchUrl(Uri.parse(url))) { await launchUrl(Uri.parse(url)); }
+          }
+          @override
+          Widget build(BuildContext context) {
+            return StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('products').orderBy('timestamp', descending: true).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) { return const Center(child: CircularProgressIndicator(color: Color(0xFFFF6B00))); }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) { return const Center(child: Text('🛍️ لا توجد عروض منشورة حالياً.', style: TextStyle(color: Color(0xFF64748B)))); }
+                final docs = snapshot.data!.docs;
+                return GridView.builder(
+                  padding: const EdgeInsets.all(12), gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.64),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final docId = docs[index].id; final p = docs[index].data() as Map<String, dynamic>;
+                    final String title = p['title'] ?? 'سلعة مميزة'; final String shopName = p['shop_name'] ?? 'تاجر'; final String price = p['price'] ?? 'غير محدد'; final String phone = p['phone'] ?? ''; final String image = p['image'] ?? 'https://picsum.photos'; final String location = p['location'] ?? 'سوريا';
+                    return Card(
+                      color: Colors.white, elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(child: Stack(children: [Positioned.fill(child: image.startsWith('data:image') ? Image.memory(base64Decode(image.split(',').last), fit: BoxFit.cover) : Image.network(image, fit: BoxFit.cover)), if (isAdminView) Positioned(top: 6, left: 6, child: IconButton(icon: const CircleAvatar(backgroundColor: Colors.red, radius: 16, child: Icon(Icons.delete_sweep, color: Colors.white, size: 18)), onPressed: () => FirebaseFirestore.instance.collection('products').doc(docId).delete()))])),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B))),
+                                Text('🏪 $shopName', maxLines: 1, style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                                Text('📍 $location', maxLines: 1, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10)),
+                                const SizedBox(height: 4), Text('$price ل.س', style: const TextStyle(color: Color(0xFFFF6B00), fontWeight: FontWeight.bold, fontSize: 13)),
+                                const SizedBox(height: 6),
+                                Row(children: [Expanded(child: ElevatedButton(onPressed: () => _openWhatsApp(phone, title), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366), padding: EdgeInsets.zero), child: const Text('واتساب', style: TextStyle(fontSize: 10, color: Colors.white)))), const SizedBox(width: 4), CircleAvatar(radius: 16, backgroundColor: const Color(0xFF1E293B), child: IconButton(icon: const Icon(Icons.phone, size: 14, color: Colors.white), onPressed: () => _makeCall(phone)))])
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          }
+        }
+
+        class AdminPanelScreen extends StatefulWidget {
+          const AdminPanelScreen({super.key});
+          @override
+          State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+        }
+
+        class _AdminPanelScreenState extends State<AdminPanelScreen> {
+          bool _isAuthorized = false; final _passwordController = TextEditingController();
+          @override
+          Widget build(BuildContext context) {
+            if (!_isAuthorized) {
+              return Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.lock_person_rounded, size: 80, color: Color(0xFF1E293B)), const SizedBox(height: 16),
+                    TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'رمز أمان المدير (123456)', border: OutlineInputBorder())),
+                    const SizedBox(height: 16), ElevatedButton(onPressed: () { if (_passwordController.text == '123456') setState(() => _isAuthorized = true); }, child: const Text('دخول')),
+                  ],
+                ),
+              );
+            }
+            return const Scaffold(body: ProductsCatalogScreen(isAdminView: true));
+          }
+        }
+        EOF
+    # 🎯 حقن ملف add_product.dart الصافي الخالي تماماً من مكتبات الويب للماكينات الحقيقية
+    - name: Inject Clean add_product.dart Code
       run: |
-        curl -sL "https://githubusercontent.com" > lib/add_product.dart
-    # 🎯 حقن ملف جافا الصافي لقطع دابر أي تداخلات كوتلن قديمة على السيرفر
+        cat << 'EOF' > lib/add_product.dart
+        import 'package:flutter/material.dart';
+        import 'package:http/http.dart' as http;
+        import 'dart:convert';
+        import 'package:image_picker/image_picker.dart';
+
+        class AddProductScreen extends StatefulWidget {
+          final Function(Map<String, dynamic>) onProductAdded;
+          const AddProductScreen({super.key, required this.onProductAdded});
+          @override
+          State<AddProductScreen> createState() => _AddProductScreenState();
+        }
+
+        class _AddProductScreenState extends State<AddProductScreen> {
+          final _formKey = GlobalKey<FormState>();
+          final _title = TextEditingController(); final _shop = TextEditingController(); final _price = TextEditingController(); final _location = TextEditingController(); final _merchantPhone = TextEditingController(); final _notes = TextEditingController();
+          String _cat = 'تجارة الحبوب بكافة أنواعها'; List<String> _albumImages = []; bool _loading = false; final ImagePicker _picker = ImagePicker();
+          final List<String> _cats = const ['تجارة الحبوب بكافة أنواعها', 'خضار وفواكه', 'سيارات', 'دراجات نارية', 'مكياجات وعطورات', 'ألبسة رجالية', 'ألبسة نسائية', 'أحذية', 'مواد غذائية', 'عقارات'];
+
+          @override
+          void dispose() { _title.dispose(); _shop.dispose(); _price.dispose(); _location.dispose(); _merchantPhone.dispose(); _notes.dispose(); super.dispose(); }
+
+          Future<void> _pickBulkImagesFromStudio() async {
+            try {
+              final List<XFile> pickedFiles = await _picker.pickMultiImage();
+              if (pickedFiles.isNotEmpty) {
+                setState(() => _albumImages.clear());
+                for (var file in pickedFiles) {
+                  final bytes = await file.readAsBytes();
+                  String base64Image = "data:image/png;base64,${base64Encode(bytes)}";
+                  setState(() { _albumImages.add(base64Image); });
+                }
+              }
+            } catch (_) {}
+          }
+
+          @override
+          Widget build(BuildContext context) {
+            return Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    const Text('🏪 مركز تجار متجر سوريا - نظام الألبوم المفتوح الصريح', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A252F)), textAlign: TextAlign.center),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: _cat, decoration: const InputDecoration(labelText: 'فئة السلعة الجديدة', border: OutlineInputBorder()),
+                      items: _cats.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(), onChanged: (v) => setState(() => _cat = v!),
+                    ),
+                    TextFormField(controller: _title, decoration: const InputDecoration(labelText: 'اسم المادة')),
+                    TextFormField(controller: _shop, decoration: const InputDecoration(labelText: 'المحل / التاجر')),
+                    TextFormField(controller: _price, decoration: const InputDecoration(labelText: 'سعر المادة ل.س')),
+                    TextFormField(controller: _merchantPhone, decoration: const InputDecoration(labelText: 'رقم الموبايل')),
+                    TextFormField(controller: _location, decoration: const InputDecoration(labelText: 'العنوان بالتفصيل داخل سوريا')),
+                    TextFormField(controller: _notes, decoration: const InputDecoration(labelText: 'ملاحظات وضمانات اختيارية')),
+                    const SizedBox(height: 10),
+                    ElevatedButton.icon(
+                      onPressed: _pickBulkImagesFromStudio, icon: const Icon(Icons.collections, color: Colors.white),
+                      label: const Text('📸 افتح الاستوديو وحدد باقة الصور معاً', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, padding: const EdgeInsets.symmetric(vertical: 12)),
+                    ),
+                    const SizedBox(height: 5),
+                    if (_albumImages.isNotEmpty) Text('✅ تم تأمين باقة الألبوم: ${_albumImages.length} صورة مجمعة', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
+                    const SizedBox(height: 15),
+                    _loading ? const Center(child: CircularProgressIndicator()) : ElevatedButton(
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                setState(() => _loading = true); final mainPic = _albumImages.isNotEmpty ? _albumImages.first : 'https://picsum.photos';
+                                final p = {'title': _title.text, 'shop_name': _shop.text, 'price': _price.text, 'phone': _merchantPhone.text, 'location': _location.text, 'category': _cat, 'image': mainPic, 'album': _albumImages, 'images_json': json.encode(_albumImages), 'notes': _notes.text.isEmpty ? 'نخب أول مكفول.' : _notes.text};
+                                widget.onProductAdded(p); _title.clear(); _shop.clear(); _price.clear(); _location.clear(); _merchantPhone.clear(); _notes.clear();
+                                setState(() { _albumImages = []; _loading = false; });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange), child: const Text('نشر العرض وتحديث الإشعارات فوراً', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+        EOF
+
+    # حقن ملف جافا الموحد لتفادي تضارب ملحقات كوتلن على السيرفر تماماً
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
