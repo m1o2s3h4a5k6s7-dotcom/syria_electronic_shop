@@ -26,7 +26,7 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير البيئة القديمة وبناء كود المتجر الشامل النقي بملف واحد مدمج وسحب الأكواد الرسمية المستقرة
+    # 🎯 تدمير البيئة القديمة وبناء كود المتجر الشامل النقي من خوادم البناء المستقرة 
     - name: Purge Environment & Generate Clean App
       run: |
         flutter clean
@@ -45,7 +45,7 @@ jobs:
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 الرفع الفوري عبر أداة مستقرة ومحمية 100% ضد أخطاء الشبكة والـ exit code 6
+    # 🎯 الرفع الفوري عبر أداة مستقرة ومحدثة 100% ضد أخطاء الشبكة والـ exit code 6
     - name: Upload Safe APK Artifact
       uses: actions/upload-artifact@v4.6.0
       with:
