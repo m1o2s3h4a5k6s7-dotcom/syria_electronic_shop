@@ -26,7 +26,7 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير ومسح كافة الملفات القديمة وإعادة إنشاء مشروع فلاتر خام وجديد من الصفر السحابي النظيف
+    # 🎯 الضربة القاضية الشاملة: تدمير كافة الملفات الملوثة كلياً وإعادة إنشاء مشروع فلاتر خام وجديد تماماً من الصفر السحابي
     - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
@@ -35,8 +35,8 @@ jobs:
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
 
-    # حقن النصف الأول النقي من واجهات متجر سوريا
-    - name: Inject Master main.dart Part A
+    # حقن النصف الأول من كود المتجر الشامل والموحد بداخل ملف main.dart المدمج
+    - name: Inject Master Consolidated Code Part A
       run: |
         cat << 'EOF' > lib/main.dart
         import 'package:flutter/material.dart';
@@ -44,7 +44,8 @@ jobs:
         import 'package:firebase_core/firebase_core.dart';
         import 'package:url_launcher/url_launcher.dart';
         import 'dart:convert';
-        import 'add_product.dart';
+        import 'package:http/http.dart' as http;
+        import 'package:image_picker/image_picker.dart';
 
         void main() async {
           WidgetsFlutterBinding.ensureInitialized();
@@ -70,8 +71,8 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن واجهات لوحة التحكم وشاشة عرض السلع وبطاقات الواتساب والاتصال
-    - name: Inject Master main.dart Part B
+    # 🎯 حقن واجهات التصفح وبطاقات المنتجات المدعمة بأزرار الواتساب والاتصال
+    - name: Inject Master Consolidated Code Part B
       run: |
         cat << 'EOF' >> lib/main.dart
 
@@ -160,8 +161,8 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن لوحة الإدارة المقفلة السحابية وتأمين الأقواس
-    - name: Inject Master main.dart Part C
+    # 🎯 حقن لوحة الإدارة وقسم البائع بالألبوم المفتوح الصريح وبدء التجميع
+    - name: Inject Master Consolidated Code Part C
       run: |
         cat << 'EOF' >> lib/main.dart
 
@@ -191,16 +192,6 @@ jobs:
             return const Scaffold(body: ProductsCatalogScreen(isAdminView: true));
           }
         }
-        EOF
-
-    # 🎯 الضربة القاضية: حقن ملف add_product.dart نقياً وصافياً كلياً داخل المشروع السحابي المستحدث
-    - name: Inject Clean add_product.dart Code
-      run: |
-        cat << 'EOF' > lib/add_product.dart
-        import 'package:flutter/material.dart';
-        import 'package:http/http.dart' as http;
-        import 'dart:convert';
-        import 'package:image_picker/image_picker.dart';
 
         class AddProductScreen extends StatefulWidget {
           final Function(Map<String, dynamic>) onProductAdded;
@@ -214,10 +205,8 @@ jobs:
           final _title = TextEditingController(); final _shop = TextEditingController(); final _price = TextEditingController(); final _location = TextEditingController(); final _merchantPhone = TextEditingController(); final _notes = TextEditingController();
           String _cat = 'تجارة الحبوب بكافة أنواعها'; List<String> _albumImages = []; bool _loading = false; final ImagePicker _picker = ImagePicker();
           final List<String> _cats = const ['تجارة الحبوب بكافة أنواعها', 'خضار وفواكه', 'سيارات', 'دراجات نارية', 'مكياجات وعطورات', 'ألبسة رجالية', 'ألبسة نسائية', 'أحذية', 'مواد غذائية', 'عقارات'];
-
           @override
           void dispose() { _title.dispose(); _shop.dispose(); _price.dispose(); _location.dispose(); _merchantPhone.dispose(); _notes.dispose(); super.dispose(); }
-
           Future<void> _pickBulkImagesFromStudio() async {
             try {
               final List<XFile> pickedFiles = await _picker.pickMultiImage();
@@ -231,7 +220,6 @@ jobs:
               }
             } catch (_) {}
           }
-
           @override
           Widget build(BuildContext context) {
             return Padding(
@@ -280,7 +268,7 @@ jobs:
         }
         EOF
 
-    # حقن ملف جافا الموحد لتفادي مشاكل تداخل كوتلن نهائياً
+    # حقن ملف جافا الموحد لتفادي تضارب ملحقات كوتلن على السيرفر تماماً
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
