@@ -26,13 +26,12 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير مجلدات الكاش ومسح ملفات الفحص القديمة التي تفجر الكيرنل
-    - name: Pure Environment Reset
+    - name: Clean & Format Environment
       run: |
         flutter clean
         rm -rf test/
 
-    - name: Install Dependencies
+    - name: Install All dependencies
       run: flutter pub get
 
     - name: Build APK Document
