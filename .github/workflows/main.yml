@@ -26,7 +26,7 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير ومسح كافة الملفات القديمة وإعادة إنشاء مشروع فلاتر خام وجديد تماماً من الصفر السحابي النظيف
+    # 🎯 تدمير ومسح كافة الملفات القديمة وإعادة إنشاء مشروع فلاتر خام وجديد تماماً من الصفر السحابي
     - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
@@ -34,21 +34,16 @@ jobs:
         flutter create --org com.example --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
+    # 🎯 سحب وحقن كود ملف main.dart الأصلي المتكامل من مخزن سحابي نقي ومضمون
+    - name: Download Master main.dart Code
+      run: |
+        curl -sL "https://githubusercontent.com" > lib/main.dart
 
-    # 🎯 حقن النصف الأول المشفر لملف main.dart (مضمون 100% ضد ضياع الأقواس)
-    - name: Inject Encrypted main.dart Part 1
+    # 🎯 سحب وحقن كود ملف add_product.dart النقي كلياً من استدعاءات الويب للألبوم والأستوديو
+    - name: Download Clean add_product.dart Code
       run: |
-        echo "aW1wb3J0ICdwYWNrYWdlOmZsdXR0ZXIvbWF0ZXJpYWwuZGFydCc7CmltcG9ydCAncGFja2FnZTpjbG91ZF9maXJlc3RvcmUvY2xvdWRfZmlyZXN0b3JlLmRhcnQnOwppbXBvcnQgJ3BhY2thZ2U6ZmlyZWJhc2VfY29yZS9maXJlYmFzZV9jb3JlLmRhcnQnOwppbXBvcnQgJ3BhY2thZ2U6dXJsX2xhdW5jaGVyL3VybF9sYXVuY2hlci5kYXJ0JzsKaW1wb3J0ICdkYXJ0OmNvbnZlcnQnOwppbXBvcnQgJ3BhY2thZ2U6aHR0cC9odHRwLmRhcnQnIGFzIGh0dHA7CmltcG9ydCAncGFja2FnZTppbWFnZV9waWNrZXIvaW1hZ2VfcGlja2VyLmRhcnQnO" | base64 --decode > lib/main.dart
-    # 🎯 حقن النصف الثاني المشفر والمحمي لملف main.dart الشامل لواجهات المتجر والمدير والزبائن
-    - name: Inject Encrypted main.dart Part 2
-      run: |
-        echo "Cgp2b2lkIG1haW4oKSBhc3luYyB7CiAgV2lkZ2V0c0ZsdXR0ZXJCaW5kaW5nLmVuc3VyZUluaXRpYWxpemVkKCk7CiAgdHJ5IHsgYXdhaXQgRmlyZWJhc2UuaW5pdGlhbGl6ZSgpOyB9IGNhdGNoKF8pIHt9CiAgcnVuQXBwKGNvbnN0IFN5cmlhU3RvcmVBcHAoKSk7Cn0KCmNsYXNzIFN5cmlhU3RvcmVBcHAgZXh0ZW5kcyBTdGF0ZWxlc3NXaWRnZXQgewogIGNvbnN0IFN5cmlhU3RvcmVBcHAoe3N1cGVyLmtleX0pOwogIEBvdmVycmlkZQogIFdpZGdldCBidWlsZChCdWlsZENvbnRleHQgY29udGV4dCkgewogICAgcmV0dXJuIE1hdGVyaWFsQXBwKAogICAgICB0aXRsZTogJ210amIgc3dyeWEnLAogICAgICBkZWJ1Z1Nob3dDaGVja2VkTW9kZUJhbm5lcjogZmFsc2UsCiAgICAgIHRoZW1lOiBUaGVtZURhdGEoCiAgICAgICAgdXNlTWF0ZXJpYWwzOiB0cnVlLAogICAgICAgIHByaW1hcnlDb2xvcjogY29uc3QgQ29sb3IoMHgxRjFFMjkzQiksCiAgICAgICAgY29sb3JTY2hlbWU6IENvbG9yU2NoZW1lLmZyb21TZWVkKHNlZWRDb2xvcjogY29uc3QgQ29sb3IoMHgxRjFFMjkzQiksIHByaW1hcnk6IGNvbnN0IENvbG9yKDB4MUYxRTI5M0IpLCBzZWNvbmRhcnk6IGNvbnN0IENvbG9yKDB4RkZGRjZCMDApKSwKICAgICAgICBzY2FmZm9sZEJhY2tncm91bmRDb2xvcjogY29uc3QgQ29sb3IoMHgxRkYxRjVGOSksCiAgICAgICksCiAgICAgIGhvbWU6IGNvbnN0IE1haW5EYXNoYm9hcmRTY3JlZW4oKSwKICAgICk7CiAgfQp9Cg==" | base64 --decode >> lib/main.dart
-    # 🎯 حقن الجزء الثالث المشفر المكمل لبطاقات العرض، والألبوم ولوحة الإدارة
-    - name: Inject Encrypted main.dart Part 3
-      run: |
-        echo "Y2xhc3MgTWFpbkFjdGl2aXR5OiBGbHV0dGVyQWN0aXZpdHkoKSB7fQ==" | base64 --decode >> lib/main.dart
-
-    # حقن ملف جافا النقي الموحد لتفادي مشاكل تداخل كوتلن نهائياً
+        curl -sL "https://githubusercontent.com" > lib/add_product.dart
+    # 🎯 حقن ملف جافا الصافي لقطع دابر أي تداخلات كوتلن قديمة على السيرفر
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
