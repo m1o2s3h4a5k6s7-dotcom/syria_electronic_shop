@@ -26,18 +26,17 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير الكاش السحابي، الفرمتة كلياً، وإنشاء مجلد lib نقي وجديد من الصفر
-    - name: Complete System Purge
+    # 🎯 تدمير ومسح كافة الملفات القديمة وإعادة إنشاء مشروع فلاتر خام وجديد من الصفر السحابي النظيف
+    - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
-        rm -rf test/
-        rm -rf lib/
-        rm -rf android/
-        flutter create . --platforms android
+        rm -rf test/ lib/ android/ ios/ web/ windows/ linux/ macos/
+        flutter create --org com.example --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
-    # 🎯 حقن كود ملف main.dart الرئيسي الكامل والمتصل بالملف المحدث الجديد
-    - name: Inject Master main.dart Code
+
+    # حقن النصف الأول النقي من واجهات متجر سوريا
+    - name: Inject Master main.dart Part A
       run: |
         cat << 'EOF' > lib/main.dart
         import 'package:flutter/material.dart';
@@ -45,7 +44,7 @@ jobs:
         import 'package:firebase_core/firebase_core.dart';
         import 'package:url_launcher/url_launcher.dart';
         import 'dart:convert';
-        import 'new_add_product.dart'; // استدعاء الملف المحدث والذكي الجديد هنا
+        import 'add_product.dart';
 
         void main() async {
           WidgetsFlutterBinding.ensureInitialized();
@@ -70,6 +69,11 @@ jobs:
             );
           }
         }
+        EOF
+    # 🎯 حقن واجهات لوحة التحكم وشاشة عرض السلع وبطاقات الواتساب والاتصال
+    - name: Inject Master main.dart Part B
+      run: |
+        cat << 'EOF' >> lib/main.dart
 
         class MainDashboardScreen extends StatefulWidget {
           const MainDashboardScreen({super.key});
@@ -155,6 +159,11 @@ jobs:
             );
           }
         }
+        EOF
+    # 🎯 حقن لوحة الإدارة المقفلة السحابية وتأمين الأقواس
+    - name: Inject Master main.dart Part C
+      run: |
+        cat << 'EOF' >> lib/main.dart
 
         class AdminPanelScreen extends StatefulWidget {
           const AdminPanelScreen({super.key});
@@ -183,10 +192,11 @@ jobs:
           }
         }
         EOF
-    # 🎯 الخطوة السحرية الكبرى: حقن ملف الرفع الصافي باسمه الجديد لمنع قراءة الكاش التالف
-    - name: Inject Clean new_add_product.dart Code
+
+    # 🎯 الضربة القاضية: حقن ملف add_product.dart نقياً وصافياً كلياً داخل المشروع السحابي المستحدث
+    - name: Inject Clean add_product.dart Code
       run: |
-        cat << 'EOF' > lib/new_add_product.dart
+        cat << 'EOF' > lib/add_product.dart
         import 'package:flutter/material.dart';
         import 'package:http/http.dart' as http;
         import 'dart:convert';
@@ -270,7 +280,7 @@ jobs:
         }
         EOF
 
-    # حقن ملف جافا الموحد لتثبيت إعدادات الماكينة ونبذ تعارضات كوتلن
+    # حقن ملف جافا الموحد لتفادي مشاكل تداخل كوتلن نهائياً
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
