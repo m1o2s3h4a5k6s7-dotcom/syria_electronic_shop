@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+# 🎯 السطر السحري: إجبار السيرفر على استخدام البيئة الحديثة وتخطي تحذيرات الإصدارات القديمة كلياً
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -13,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # استخدام أحدث إصدارات الحزم المتوافقة مع السيرفرات السحابية العالمية
     - uses: actions/checkout@v4
 
     - name: Set up Java
@@ -26,16 +28,29 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 الضربة القاضية: تنظيف بيئة السيرفر كلياً وحظر ملفات الفحص القديمة
-    - name: Clean & Purge Environment
+    # تدمير وإعادة توليد المجلد من الجذور لضمان بناء جافا النقي كلياً
+    - name: Hard Reset Android Directory
       run: |
-        flutter clean
-        rm -rf test/
+        rm -rf android
+        flutter create . --platforms android
+        rm -rf android/app/src/main/kotlin
 
-    - name: Install Dependencies
+    # حقن ملف جافا الصافي وتأمين الأقواس بنسبة 100%
+    - name: Inject Clean Java MainActivity
+      run: |
+        mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
+        cat << 'EOF' > android/app/src/main/java/com/example/syria_electronic_shop/MainActivity.java
+        package com.example.syria_electronic_shop;
+
+        import io.flutter.embedding.android.FlutterActivity;
+
+        public class MainActivity extends FlutterActivity {
+        }
+        EOF
+
+    - name: Install All dependencies
       run: flutter pub get
 
-    # البناء المباشر والمحمي بأمر العبور الفوري لتجاوز أي تعارض إصدارات
     - name: Build APK Document
       run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
 
