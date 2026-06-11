@@ -296,8 +296,7 @@ jobs:
         flutter:
           uses-material-design: true
         EOF
-
-    # 🎯 حقن ملف جافا المستقر النقي لمنع تضارب ملحقات كوتلن كلياً على السيرفر
+# 🎯 حقن ملف جافا المستقر النقي لمنع تضارب ملحقات كوتلن كلياً على السيرفر
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
@@ -310,11 +309,13 @@ jobs:
     - name: Install All dependencies
       run: flutter pub get
 
-    - name: Build APK Document
-      run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
+    # 💥 الضربة القاضية: البناء بصيغة الـ Debug المفتوحة لكسر حظر حماية جوجل وتخطي التوقيع الرقمي
+    - name: Build Anti-Block Debug APK
+      run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
+    # 🎯 رفع الملف المستخرج الصافي والمقاوم للحظر
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: syria-shop-app
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: build/app/outputs/flutter-apk/app-debug.apk
