@@ -1,41 +1,5 @@
-name: Build Syria Shop APK
-
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-
-    # 💥 الضربة القاضية: تدمير كافة الملفات والمجلدات التي رُفعت سابقاً وتوليد مشروع فلاتر خام ونظيف تماماً
-    - name: Absolute Environment Purge & Recreate
-      run: |
-        flutter clean
-        rm -rf test/ lib/ android/ ios/ web/ windows/ linux/ macos/ pubspec.yaml pubspec.lock
-        flutter create --org com.syriashoppro --project-name syria_electronic_shop .
-        rm -rf android/app/src/main/kotlin
-        mkdir -p lib
-    # 🎯 حقن النصف الأول النقي والموحد من كود الواجهات والعروض الحية
-    - name: Inject Master main.dart Code Part A
+    # 🎯 حقن الجزء أ من كود الواجهات الشاملة بداخل ملف main.dart المدمج
+    - name: Inject Master Consolidated Code Part A
       run: |
         cat << 'EOF' > lib/main.dart
         import 'package:flutter/material.dart';
@@ -98,6 +62,11 @@ jobs:
             );
           }
         }
+        EOF
+    # 🎯 حقن الجزء ب من كود بطاقات السلع، أزرار الواتساب، ولوحة تحكم الإدارة المقفلة
+    - name: Inject Master Consolidated Code Part B
+      run: |
+        cat << 'EOF' >> lib/main.dart
 
         class ProductsCatalogScreen extends StatelessWidget {
           final bool isAdminView;
@@ -154,11 +123,6 @@ jobs:
             );
           }
         }
-        EOF
-    # 🎯 حقن لوحة الإدارة المقفلة وقسم البائع بالألبوم المفتوح الصريح المدمج
-    - name: Inject Master main.dart Code Part B
-      run: |
-        cat << 'EOF' >> lib/main.dart
 
         class AdminPanelScreen extends StatefulWidget {
           const AdminPanelScreen({super.key});
@@ -186,6 +150,15 @@ jobs:
             return const Scaffold(body: ProductsCatalogScreen(isAdminView: true));
           }
         }
+        EOF
+    # 🎯 حقن كود شاشة الرفع والألبوم المفتوح الصريح (نقي 100% من استدعاءات الويب)
+    - name: Inject Clean add_product.dart Code
+      run: |
+        cat << 'EOF' > lib/add_product.dart
+        import 'package:flutter/material.dart';
+        import 'package:http/http.dart' as http;
+        import 'dart:convert';
+        import 'package:image_picker/image_picker.dart';
 
         class AddProductScreen extends StatefulWidget {
           final Function(Map<String, dynamic>) onProductAdded;
@@ -199,8 +172,10 @@ jobs:
           final _title = TextEditingController(); final _shop = TextEditingController(); final _price = TextEditingController(); final _location = TextEditingController(); final _merchantPhone = TextEditingController(); final _notes = TextEditingController();
           String _cat = 'تجارة الحبوب بكافة أنواعها'; List<String> _albumImages = []; bool _loading = false; final ImagePicker _picker = ImagePicker();
           final List<String> _cats = const ['تجارة الحبوب بكافة أنواعها', 'خضار وفواكه', 'سيارات', 'دراجات نارية', 'مكياجات وعطورات', 'ألبسة رجالية', 'ألبسة نسائية', 'أحذية', 'مواد غذائية', 'عقارات'];
+
           @override
           void dispose() { _title.dispose(); _shop.dispose(); _price.dispose(); _location.dispose(); _merchantPhone.dispose(); _notes.dispose(); super.dispose(); }
+
           Future<void> _pickBulkImagesFromStudio() async {
             try {
               final List<XFile> pickedFiles = await _picker.pickMultiImage();
@@ -214,6 +189,7 @@ jobs:
               }
             } catch (_) {}
           }
+
           @override
           Widget build(BuildContext context) {
             return Padding(
@@ -262,7 +238,34 @@ jobs:
         }
         EOF
 
-    # حقن ملف جافا الموحد لتفادي تضارب ملحقات كوتلن على السيرفر تماماً
+    # 🎯 الخطوة السحرية: إعادة تهيئة وكتابة ملف pubspec.yaml لربط مكتبات الموبايل فقط وحذف أي أثر للمكتبات المسببة لانهيار الكيرنل
+    - name: Overwrite pubspec.yaml with Clean Dependencies
+      run: |
+        cat << 'EOF' > pubspec.yaml
+        name: syria_electronic_shop
+        description: "A new Flutter project."
+        publish_to: 'none'
+        version: 1.0.0+1
+        environment:
+          sdk: '>=3.0.0 <4.0.0'
+        dependencies:
+          flutter:
+            sdk: flutter
+          cupertino_icons: ^1.0.5
+          cloud_firestore: ^4.14.0
+          firebase_core: ^2.24.0
+          url_launcher: ^6.2.2
+          http: ^1.1.0
+          image_picker: ^1.0.4
+        dev_dependencies:
+          flutter_test:
+            sdk: flutter
+          flutter_lints: ^2.0.0
+        flutter:
+          uses-material-design: true
+        EOF
+
+    # 🎯 حقن ملف جافا المستقر لمنع تضارب ملحقات كوتلن كلياً
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
