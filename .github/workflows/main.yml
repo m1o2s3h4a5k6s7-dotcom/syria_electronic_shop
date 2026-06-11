@@ -1,105 +1,4 @@
-name: Build Syria Shop APK
-
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-
-    # 🎯 الضربة القاضية: تدمير كافة الملفات والمجلدات القديمة الملوثة وإعادة إنشاء مشروع فلاتر خام وجديد تماماً من الصفر
-    - name: Absolute Environment Purge & Recreate
-      run: |
-        flutter clean
-        rm -rf test/ lib/ android/ ios/ web/ windows/ linux/ macos/
-        flutter create --org com.example --project-name syria_electronic_shop .
-        rm -rf android/app/src/main/kotlin
-        mkdir -p lib
-
-    # حقن كود ملف main.dart الرئيسي الكامل والمتوافق مع لغة جافا سحابياً - الجزء أ
-    - name: Inject Master main.dart Code Part A
-      run: |
-        cat << 'EOF' > lib/main.dart
-        import 'package:flutter/material.dart';
-        import 'package:cloud_firestore/cloud_firestore.dart';
-        import 'package:firebase_core/firebase_core.dart';
-        import 'package:url_launcher/url_launcher.dart';
-        import 'dart:convert';
-        import 'add_product.dart';
-
-        void main() async {
-          WidgetsFlutterBinding.ensureInitialized();
-          try { await Firebase.initializeApp(); } catch(_) {}
-          runApp(const SyriaStoreApp());
-        }
-
-        class SyriaStoreApp extends StatelessWidget {
-          const SyriaStoreApp({super.key});
-          @override
-          Widget build(BuildContext context) {
-            return MaterialApp(
-              title: 'متجر سوريا الإلكتروني',
-              debugShowCheckedModeBanner: false,
-              theme: ThemeData(
-                useMaterial3: true,
-                primaryColor: const Color(0xFF1E293B),
-                colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E293B), primary: const Color(0xFF1E293B), secondary: const Color(0xFFFF6B00)),
-                scaffoldBackgroundColor: const Color(0xFFF1F5F9),
-              ),
-              home: const MainDashboardScreen(),
-            );
-          }
-        }
-
-        class MainDashboardScreen extends StatefulWidget {
-          const MainDashboardScreen({super.key});
-          @override
-          State<MainDashboardScreen> createState() => _MainDashboardScreenState();
-        }
-
-        class _MainDashboardScreenState extends State<MainDashboardScreen> {
-          int _selectedIndex = 0;
-          void _uploadProductToFirebase(Map<String, dynamic> product) async {
-            try { await FirebaseFirestore.instance.collection('products').add({...product, 'timestamp': FieldValue.serverTimestamp()}); } catch (_) {}
-          }
-          @override
-          Widget build(BuildContext context) {
-            final List<Widget> screens = [const ProductsCatalogScreen(isAdminView: false), AddProductScreen(onProductAdded: _uploadProductToFirebase), const AdminPanelScreen()];
-            return Scaffold(
-              appBar: AppBar(
-                title: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.storefront, color: Color(0xFFFF6B00)), SizedBox(width: 8), Text('مَتْجَر سُورْيَا الإلِكْترُونِي', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18))]),
-                centerTitle: true, backgroundColor: const Color(0xFF1E293B), elevation: 4,
-              ),
-              body: screens[_selectedIndex],
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: _selectedIndex, selectedItemColor: const Color(0xFFFF6B00), unselectedItemColor: const Color(0xFF64748B), backgroundColor: Colors.white, type: BottomNavigationBarType.fixed,
-                onTap: (index) => setState(() => _selectedIndex = index),
-                items: const [BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'العروض الحية'), BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline_rounded), label: 'أنا بائع'), BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), label: 'الإدارة')],
-              ),
-            );
-          }
-        }
-        EOF
-    # حقن كود ملف main.dart الرئيسي الكامل والمتوافق مع لغة جافا سحابياً - الجزء ب
+    # 🎯 حقن لوحة الإدارة المقفلة السحابية وتأمين الأقواس
     - name: Inject Master main.dart Code Part B
       run: |
         cat << 'EOF' >> lib/main.dart
@@ -187,7 +86,7 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن قسم البائع المطور والألبوم المفتوح الصريح (نقي 100% من استدعاءات الويب)
+    # 🎯 الضربة القاضية: حقن كود ملف add_product.dart نقياً وصافياً كلياً للألبوم المفتوح
     - name: Inject Clean add_product.dart Code
       run: |
         cat << 'EOF' > lib/add_product.dart
@@ -273,8 +172,7 @@ jobs:
           }
         }
         EOF
-
-    # 🎯 إطلاق ملف جافا السحابي النقي لتثبيت إعدادات الماكينة ونبذ تعارضات كوتلن
+    # 🎯 حقن ملف جافا النقي الموحد لتفادي مشاكل تداخل كوتلن على السيرفر تماماً
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
