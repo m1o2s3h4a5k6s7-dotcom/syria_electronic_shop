@@ -26,7 +26,7 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير ومسح كافة الملفات القديمة وإعادة إنشاء مشروع فلاتر خام وجديد تماماً من الصفر السحابي
+    # 🎯 الضربة القاضية: تدمير كاش المخدم كلياً وتوليد مجرد مشروع فلاتر خام وجديد تماماً
     - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
@@ -34,12 +34,12 @@ jobs:
         flutter create --org com.example --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
-    # 🎯 سحب وحقن كود ملف main.dart الأصلي المتكامل من مخزن سحابي نقي ومضمون
+    # 🎯 سحب وحقن كود ملف main.dart الأصلي المتكامل من روابط الخوادم الرسمية المستقرة
     - name: Download Master main.dart Code
       run: |
         curl -sL "https://githubusercontent.com" > lib/main.dart
 
-    # 🎯 سحب وحقن كود ملف add_product.dart النقي كلياً من استدعاءات الويب للألبوم والأستوديو
+    # 🎯 سحب وحقن كود ملف add_product.dart الصافي للموبايل من الخوادم الرسمية المستقرة
     - name: Download Clean add_product.dart Code
       run: |
         curl -sL "https://githubusercontent.com" > lib/add_product.dart
