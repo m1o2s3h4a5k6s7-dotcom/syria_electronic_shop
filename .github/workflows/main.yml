@@ -26,16 +26,16 @@ jobs:
       with:
         channel: 'stable'
 
-    # 💥 تدمير البيئة القديمة وبناء كود المتجر الشامل النقي من الصفر السحابي
-    - name: Purge Environment & Generate Clean App
+    # 🎯 إبادة كافة مخلفات الكاش وتوليد تطبيق أندرويد خام ونظيف تماماً
+    - name: Absolute Environment Purge & Recreate
       run: |
         flutter clean
-        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock
+        rm -rf test/ lib/ android/ ios/ web/ windows/ linux/ macos/ pubspec.yaml pubspec.lock
         flutter create --org com.syriashoppro --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
-    # 🎯 حقن النصف الأول النقي والموحد من كود الواجهات والعروض الحية - الجزء أ
-    - name: Inject Master main.dart Code Part A
+    # 🎯 حقن الجزء أ لملف main.dart مع ميزة الأمان الذاتي لمنع الـ Crash عند الفتح
+    - name: Inject Safe App Code Part A
       run: |
         cat << 'EOF' > lib/main.dart
         import 'package:flutter/material.dart';
@@ -48,7 +48,11 @@ jobs:
 
         void main() async {
           WidgetsFlutterBinding.ensureInitialized();
-          try { await Firebase.initializeApp(); } catch(_) {}
+          try { 
+            await Firebase.initializeApp(); 
+          } catch(e) {
+            debugPrint("Firebase connection bypassed safely: e");
+          }
           runApp(const SyriaStoreApp());
         }
 
@@ -70,8 +74,8 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن الجزء ب من كود بطاقات السلع، أزرار الواتساب، ولوحة تحكم الإدارة المقفلة
-    - name: Inject Master Consolidated Code Part B
+    # 🎯 حقن الجزء ب لبطاقات العرض، أزرار الواتساب الحية، ولوحة تحكم الإدارة المقفلة
+    - name: Inject Safe App Code Part B
       run: |
         cat << 'EOF' >> lib/main.dart
 
@@ -187,8 +191,8 @@ jobs:
           }
         }
         EOF
-    # 🎯 حقن كود شاشة الرفع والألبوم المفتوح الصريح (نقي 100% من استدعاءات الويب)
-    - name: Inject Clean add_product.dart Code
+    # 🎯 حقن قسم البائع بالألبوم المفتوح الصريح المكتمل الحامي للأقواس (تكملة ملف main.dart)
+    - name: Inject Safe App Code Part C
       run: |
         cat << 'EOF' >> lib/main.dart
 
@@ -204,10 +208,8 @@ jobs:
           final _title = TextEditingController(); final _shop = TextEditingController(); final _price = TextEditingController(); final _location = TextEditingController(); final _merchantPhone = TextEditingController(); final _notes = TextEditingController();
           String _cat = 'تجارة الحبوب بكافة أنواعها'; List<String> _albumImages = []; bool _loading = false; final ImagePicker _picker = ImagePicker();
           final List<String> _cats = const ['تجارة الحبوب بكافة أنواعها', 'خضار وفواكه', 'سيارات', 'دراجات نارية', 'مكياجات وعطورات', 'ألبسة رجالية', 'ألبسة نسائية', 'أحذية', 'مواد غذائية', 'عقارات'];
-
           @override
           void dispose() { _title.dispose(); _shop.dispose(); _price.dispose(); _location.dispose(); _merchantPhone.dispose(); _notes.dispose(); super.dispose(); }
-
           Future<void> _pickBulkImagesFromStudio() async {
             try {
               final List<XFile> pickedFiles = await _picker.pickMultiImage();
@@ -221,7 +223,6 @@ jobs:
               }
             } catch (_) {}
           }
-
           @override
           Widget build(BuildContext context) {
             return Padding(
@@ -270,7 +271,7 @@ jobs:
         }
         EOF
 
-    # 🎯 الضربة القاضية: إعادة هيكلة وتطهير ملف pubspec.yaml سحابياً لربط حزم حقيقية 100% متوافقة مع الكيرنل
+    # 🎯 الضربة القاضية السحابية: بناء ملف pubspec.yaml بمكتبات الموبايل النقية 100% ومنع تعارض الكيرنل
     - name: Overwrite pubspec.yaml with Clean Dependencies
       run: |
         cat << 'EOF' > pubspec.yaml
@@ -296,7 +297,8 @@ jobs:
         flutter:
           uses-material-design: true
         EOF
-# 🎯 حقن ملف جافا المستقر النقي لمنع تضارب ملحقات كوتلن كلياً على السيرفر
+
+    # 🎯 حقن ملف جافا المستقر النقي لمنع تضارب ملحقات كوتلن كلياً وتثبيت النشاط الأساسي
     - name: Inject Clean Java MainActivity
       run: |
         mkdir -p android/app/src/main/java/com/example/syria_electronic_shop
@@ -309,11 +311,10 @@ jobs:
     - name: Install All dependencies
       run: flutter pub get
 
-    # 💥 الضربة القاضية: البناء بصيغة الـ Debug المفتوحة لكسر حظر حماية جوجل وتخطي التوقيع الرقمي
+    # 💥 الضربة القاضية البركانية: البناء بصيغة الـ Debug المعفاة من حظر حماية جوجل لتعمل على الماكينة فوراً
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 رفع الملف المستخرج الصافي والمقاوم للحظر
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
