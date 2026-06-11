@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:html' as html;
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 
 class AddProductScreen extends StatefulWidget {
   final Function(Map<String, dynamic>) onProductAdded;
@@ -22,8 +22,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _notes = TextEditingController();
   String _cat = 'تجارة الحبوب بكافة أنواعها';
 
+  // ألبوم متوافق مع الموبايل والويب لحمل باقة الصور معاً دفعة واحدة
   List<String> _albumImages = [];
   bool _loading = false;
+  final ImagePicker _picker = ImagePicker();
 
   final List<String> _cats = const [
     'تجارة الحبوب بكافة أنواعها',
@@ -39,24 +41,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    // 🎯 الحل السحري والذكي: فحص المتصفح الداخلي لـ AppCreator24 وإجبار الهاتف على الانتقال لمتصفح كروم الحقيقي
-    _forceOpenInExternalBrowser();
-  }
-
-  void _forceOpenInExternalBrowser() {
-    final String userAgent = html.window.navigator.userAgent.toLowerCase();
-    // كشف ما إذا كان المستخدم يتصفح من داخل تطبيق WebView المقفل الخاص بـ AppCreator24
-    if (userAgent.contains('wv') ||
-        userAgent.contains('android') && !userAgent.contains('chrome')) {
-      // إجبار الهاتف على فتح الرابط الحالي في متصفح خارجي نقي يدعم الصور المتعددة
-      html.window.location.href =
-          "intent://syria-electronic-shop.vercel.app#Intent;scheme=https;package=com.android.chrome;end";
-    }
-  }
-
-  @override
   void dispose() {
     _title.dispose();
     _shop.dispose();
@@ -67,36 +51,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
     super.dispose();
   }
 
-  // دالة التقاط باقة الصور معاً دفعة واحدة بصلاحيات المتصفح الكاملة
-  // دالة متطورة ومحقونة لحل مشكلة متصفح AppCreator24 الداخلي وإجباره على التحديد المتعدد من الاستوديو
-  void _pickBulkImagesFromStudio() {
-    final html.FileUploadInputElement input = html.FileUploadInputElement();
-    input.accept = 'image/jpeg,image/png,image/webp';
-    input.multiple = true; // تفعيل صريح ومباشر للتحديد المفتوح المتعدد
-
-    input.click();
-
-    input.onChange.listen((e) {
-      if (input.files != null && input.files!.isNotEmpty) {
-        setState(
-          () => _albumImages.clear(),
-        ); // تنظيف الألبوم لاستقبال الصور الجديدة معاً
-
-        final int totalFiles = input.files!.length;
-        for (int i = 0; i < totalFiles; i++) {
-          final file = input.files![i];
-
-          // الكود السحري: تحويل الملف إلى رابط كائن مؤقت (Blob URL) لتخطي حظر أمان AppCreator24 فوراً
-          final String blobUrl = html.Url.createObjectUrlFromBlob(file);
-
+  // 🎯 الحل السحري النهائي: استدعاء الألبوم بصيغة الموبايل النقية المتوافقة مع تجميع الـ APK
+  Future<void> _pickBulkImagesFromStudio() async {
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultiImage();
+      if (pickedFiles.isNotEmpty) {
+        setState(() => _albumImages.clear());
+        for (var file in pickedFiles) {
+          final bytes = await file.readAsBytes();
+          // تحويل فوري لكتل الصور البرمية لتخزينها محلياً وبثبات كامل
+          String base64Image = "data:image/png;base64,${base64Encode(bytes)}";
           setState(() {
-            _albumImages.add(
-              blobUrl,
-            ); // حقن الصورة داخل قائمة المعاينة المفتوحة
+            _albumImages.add(base64Image);
           });
         }
       }
-    });
+    } catch (_) {}
   }
 
   @override
@@ -118,7 +88,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              initialValue: _cat,
+              value: _cat,
               decoration: const InputDecoration(
                 labelText: 'فئة السلعة الجديدة',
                 border: OutlineInputBorder(),
@@ -139,7 +109,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             TextFormField(
               controller: _price,
-              decoration: const InputDecoration(labelText: 'السعر النهائي'),
+              decoration: const InputDecoration(labelText: 'السعر النهائي ל.ס'),
             ),
             TextFormField(
               controller: _merchantPhone,
@@ -147,11 +117,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             TextFormField(
               controller: _location,
-              decoration: const InputDecoration(labelText: 'العنوان بالتفصيل'),
+              decoration: const InputDecoration(
+                labelText: 'العنوان بالتفصيل داخل سوريا',
+              ),
             ),
             TextFormField(
               controller: _notes,
-              decoration: const InputDecoration(labelText: 'ملاحظات اختيارية'),
+              decoration: const InputDecoration(
+                labelText: 'ملاحظات وضمانات اختيارية',
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -159,7 +133,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               onPressed: _pickBulkImagesFromStudio,
               icon: const Icon(Icons.collections, color: Colors.white),
               label: const Text(
-                '📸 حدد كافة صور البضاعة معاً من الاستوديو',
+                '📸 افتح الاستوديو وحدد باقة الصور معاً بضغطة واحدة',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -171,6 +145,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
             ),
             const SizedBox(height: 5),
+
+            if (_albumImages.isNotEmpty)
+              Text(
+                '✅ تم تأمين باقة الألبوم: ${_albumImages.length} صورة مجمعة للسلعة',
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+                textAlign: TextAlign.center,
+              ),
 
             if (_albumImages.isNotEmpty)
               Container(
@@ -190,8 +175,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(5),
-                          child: Image.network(
-                            _albumImages[i],
+                          child: Image.memory(
+                            base64Decode(_albumImages[i].split(',').last),
                             fit: BoxFit.cover,
                           ),
                         ),
