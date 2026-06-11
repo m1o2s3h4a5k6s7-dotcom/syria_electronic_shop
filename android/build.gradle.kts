@@ -1,34 +1,23 @@
 buildscript {
-    val kotlinVersion = "1.8.22"
     repositories {
         google()
         mavenCentral()
     }
-        dependencies {
-        // 🎯 قمنا بتحديث رقم الإصدار ليتطابق مع النسخة المخزنة في جهازك تلقائياً
-        classpath("com.android.tools.build:gradle:8.11.1") 
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22")
     }
+}
 
 allprojects {
     repositories {
         google()
         mavenCentral()
-        // حقن مستودع فلاتر وتخطي أي حظر تلقائياً
         maven { url = uri("https://googleapis.com") }
     }
 }
 
-rootProject.buildDir = layout.buildDirectory.dir("../../build").get().asFile
-
-subprojects {
-    project.buildDir = rootProject.buildDir.resolve(project.name)
-}
-
-subprojects {
-    project.evaluationDependsOn(":app")
-}
-
+// 🎯 الكود الحديث الخالي من الأخطاء والتحذيرات ومتوافق مع إغلاق الأقواس بالكامل
 tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }
