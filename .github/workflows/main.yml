@@ -26,7 +26,7 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير البيئة القديمة وبناء كود المتجر الشامل النقي بجميع ميزاته الفاخرة سحابياً 
+    # 🎯 تدمير البيئة القديمة المعطلة وبناء كود المتجر الشامل النقي بجميع ميزاته الفاخرة سحابياً 
     - name: Purge Environment & Generate Clean App
       run: |
         flutter clean
@@ -45,7 +45,15 @@ jobs:
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 الضربة القاضية: ضخ الـ APK الصافي مباشرة إلى تطبيق Telegram لكسر عوائق جيت هاب للأبد
-    - name: Send APK to Telegram Channel or Chat
+    # 🎯 الضربة القاضية أ: ضخ الـ APK الصافي مباشرة إلى تطبيق Telegram ليبقى محفوظاً للأبد
+    - name: Send APK to Telegram Chat
       run: |
         curl -F document=@build/app/outputs/flutter-apk/app-debug.apk https://telegram.org
+
+    # 🎯 الضربة القاضية ب: رفع الـ APK وتوليد رابط تحميل مباشر وصريح بداخل السجلات لكسر عوائق جيت هاب نهائياً
+    - name: Generate Direct Download Link inside Logs
+      run: |
+        echo "======================================================== "
+        echo "🚀 رابط تحميل تطبيق متجر سوريا الإلكتروني المباشر الفولاذي: "
+        curl -F "file=@build/app/outputs/flutter-apk/app-debug.apk" https://disroot.org
+        echo "======================================================== "
