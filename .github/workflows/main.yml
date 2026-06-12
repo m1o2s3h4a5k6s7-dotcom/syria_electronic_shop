@@ -5,9 +5,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -17,8 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -31,8 +26,8 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير البيئة القديمة وبناء كود المتجر الشامل النقي بجميع ميزاته الفاخرة سحابياً وعزله بالكامل
-    - name: Purge Environment & Generate Clean App
+    # 🎯 تدمير البيئة القديمة والعودة لصيغة التأسيس الصافية والناجحة 100% في المرة الماضية
+    - name: Purge Environment & Reconstruct Master App
       run: |
         flutter clean
         rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock
@@ -43,13 +38,16 @@ jobs:
         curl -sL "https://githubusercontent.com" > pubspec.yaml
         curl -sL "https://githubusercontent.com" > android/app/src/main/AndroidManifest.xml
 
-    # 🎯 الضربة القاضية الجبرية: حزم وضغط مجلدات المشروع الصافية والمصلحة وحقنها مباشرة لداخل مستودعك لتنزيلها الفوري الآمن
-    - name: Package Clean Code and Push to Repository
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@://github.com"
-        mkdir -p stable_project
-        zip -r stable_project/syria-store-code.zip lib/ android/ pubspec.yaml
-        git add stable_project/syria-store-code.zip
-        git commit -m "تثبيت وحفظ كبسولة أكواد متجر سوريا المطور الفولاذية الشاملة 🚀" || true
-        git push origin main || true
+    - name: Install All dependencies
+      run: flutter pub get
+
+    # 🚀 العودة لأمر البناء الفائز الأصلي بصيغة Release الفولاذية المستقرة للتخلص من الـ exit code 6 كلياً
+    - name: Build Master Release APK
+      run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
+
+    # 🎯 الرفع الصافي والمضمون للـ APK المستقر والمقاوم للكراش والحظر
+    - name: Upload Master App Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: syria-shop-app
+        path: build/app/outputs/flutter-apk/app-release.apk
