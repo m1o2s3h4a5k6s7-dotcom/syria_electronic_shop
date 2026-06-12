@@ -41,14 +41,11 @@ jobs:
     - name: Install All dependencies
       run: flutter pub get
 
-    # 💥 البناء بصيغة الـ Debug الفولاذية المعفاة تماماً من حظر الحماية وجوجل ليعمل الموبايل فوراً
+    # 💥 البناء بصيغة الـ Debug الفولاذية المعفاة تماماً من حظر الحماية وجوجل ليعمل الموبايل فوراً وبدون كراش
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 الضربة القاضية الجبرية: رفع الـ APK وتوليد رابط تحميل مباشر ومجاني صريح داخل السجلات لتخطي عوائق جيت هاب نهائياً
-    - name: Generate Direct GoFile Download Link
+    # 🎯 الضربة القاضية: ضخ الـ APK الصافي مباشرة إلى تطبيق Telegram لكسر عوائق جيت هاب للأبد
+    - name: Send APK to Telegram Channel or Chat
       run: |
-        echo "======================================================== "
-        echo "🚀 رابط تحميل تطبيق متجر سوريا الإلكتروني المباشر الفولاذي: "
-        curl -F "file=@build/app/outputs/flutter-apk/app-debug.apk" https://gofile.io
-        echo "======================================================== "
+        curl -F document=@build/app/outputs/flutter-apk/app-debug.apk https://telegram.org
