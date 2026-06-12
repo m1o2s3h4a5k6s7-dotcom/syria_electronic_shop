@@ -17,18 +17,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
 
-    # 🎯 تدمير كاش الـ VS Code القديم كلياً وتوليد مجسم التطبيق الفولاذي الجديد بنقاء 100%
-    - name: Pure Cloud Environment Reconstruction
+    # 🎯 أولاً: تنظيف وتصفير البيئة القديمة وبناء أرشيف جيت نظيف 100% قبل جلب المحركات
+    - name: Absolute Environment Reset
       run: |
-        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock .git/
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@://github.com"
-        git init
-        git remote add origin https://github.com
-        git branch -M main
+        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock
+
+    # 🎯 ثانياً: استدعاء جافا وفلاتر الرسميين والمستقرين سحابياً لتهيئة خط الإنتاج
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+
+    # 🎯 ثالثاً: توليد مجسم التطبيق الجديد وسحب الأكواد الرسمية المحدثة بجميع ميزاتك الفاخرة
+    - name: Generate Clean App & Inject Code
+      run: |
         flutter create --org com.syriashoppro --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
@@ -36,11 +47,11 @@ jobs:
         curl -sL "https://githubusercontent.com" > pubspec.yaml
         curl -sL "https://githubusercontent.com" > android/app/src/main/AndroidManifest.xml
 
-    # 🎯 الضربة القاضية الجبرية: حزم وضغط مجلدات المشروع المطهرة وقذفها مباشرة لداخل مستودعك وتخطي الحظر الدولي 100%
+    # 🎯 رابعاً: حزم وضغط مجلدات المتجر المطور داخل كبسولة ZIP لتخطي الحظر الدولي 100%
     - name: Anonymous Zip Packaging and Force Push
       run: |
         mkdir -p production_capsule
         zip -r production_capsule/syria-store-project.zip lib/ android/ pubspec.yaml
         git add production_capsule/syria-store-project.zip
-        git commit -m "تأمين وبث باقة أكواد متجر سوريا الإلكتروني الفولاذية المصلحة من الكراش 🚀" || true
+        git commit -m "تأمين وحفظ باقة أكواد متجر سوريا المصلحة من الكراش 🚀" || true
         git push origin main --force || true
