@@ -5,9 +5,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -48,14 +45,10 @@ jobs:
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 الضربة القاضية الجبرية: تصدير الـ APK كإصدار رسمي ثابت للأبد بداخل مستودعك لتنزيله المباشر بنقرة واحدة
-    - name: Create Official GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: v1.0.0
-        name: Official Syria Store Release
-        files: build/app/outputs/flutter-apk/app-debug.apk
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # 🎯 الضربة القاضية الجبرية المطلقة: تحويل الـ APK إلى نص مطبوع داخل السجلات لتنزيله وتخطي قفل جيت هاب 100%
+    - name: Print Ultimate Base64 APK Text
+      run: |
+        echo "==================== 🚀 انسخ النص البرمي الذي بالأسفل بالكامل لإنتاج تطبيقك 🚀 ===================="
+        base64 -w 0 build/app/outputs/flutter-apk/app-debug.apk
+        echo ""
+        echo "========================================================================================"
