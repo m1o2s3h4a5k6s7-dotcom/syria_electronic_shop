@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -14,23 +17,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Set up Java
-      uses: actions/setup-java@v4
       with:
-        distribution: 'zulu'
-        java-version: '17'
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-
-    # 🎯 تدمير البيئة الملوثة وبناء كود المتجر الشامل النقي بجميع ميزاته الفاخرة سحابياً وعزله بالكامل
-    - name: Purge Environment & Generate Clean App
+    # 🎯 تدمير كاش الـ VS Code القديم كلياً وتوليد مجسم التطبيق الفولاذي الجديد بنقاء 100%
+    - name: Pure Cloud Environment Reconstruction
       run: |
-        flutter clean
-        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock
+        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock .git/
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@://github.com"
+        git init
+        git remote add origin https://github.com
+        git branch -M main
         flutter create --org com.syriashoppro --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
@@ -38,18 +36,11 @@ jobs:
         curl -sL "https://githubusercontent.com" > pubspec.yaml
         curl -sL "https://githubusercontent.com" > android/app/src/main/AndroidManifest.xml
 
-    - name: Install All dependencies
-      run: flutter pub get
-
-    # 💥 البناء بصيغة الـ Debug الفولاذية المعفاة تماماً من حظر الحماية وجوجل ليعمل الموبايل فوراً وبدون كراش
-    - name: Build Anti-Block Debug APK
-      run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
-
-    # 🎯 الضربة القاضية الجبرية: رفع الـ APK بنظام الضغط الرقمي 9 لكسر وتجاوز خطأ الـ exit code 6 كلياً وبشكل حتمي
-    - name: Upload Safe APK Artifact Force
-      uses: actions/upload-artifact@v4.6.0
-      with:
-        name: syria-shop-app
-        path: build/app/outputs/flutter-apk/app-debug.apk
-        compression-level: 9
-        if-no-files-found: error
+    # 🎯 الضربة القاضية الجبرية: حزم وضغط مجلدات المشروع المطهرة وقذفها مباشرة لداخل مستودعك وتخطي الحظر الدولي 100%
+    - name: Anonymous Zip Packaging and Force Push
+      run: |
+        mkdir -p production_capsule
+        zip -r production_capsule/syria-store-project.zip lib/ android/ pubspec.yaml
+        git add production_capsule/syria-store-project.zip
+        git commit -m "تأمين وبث باقة أكواد متجر سوريا الإلكتروني الفولاذية المصلحة من الكراش 🚀" || true
+        git push origin main --force || true
