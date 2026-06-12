@@ -14,8 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -28,7 +26,7 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🎯 تدمير البيئة التالفة للـ VS Code وبناء كود المتجر الشامل النقي بملف واحد مدمج وسحب الأكواد المستقرة
+    # 🎯 تدمير البيئة القديمة وبناء كود المتجر الشامل النقي بجميع ميزاته الفاخرة سحابياً 
     - name: Purge Environment & Generate Clean App
       run: |
         flutter clean
@@ -43,17 +41,14 @@ jobs:
     - name: Install All dependencies
       run: flutter pub get
 
-    # 💥 البناء بصيغة الـ Debug الفولاذية المعفاة تماماً من حظر الحماية وجوجل ليعمل الموبايل فوراً وبدون كراش
+    # 💥 البناء بصيغة الـ Debug الفولاذية المعفاة تماماً من حظر الحماية وجوجل ليعمل الموبايل فوراً
     - name: Build Anti-Block Debug APK
       run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
 
-    # 🎯 الضربة القاضية الجبرية: حقن ونقل ملف الـ APK المستخرج مباشرة لداخل مجلد مستودعك الرئيسي لتنزيله بنقرة واحدة وتخطي خطأ الـ exit code 6 كلياً
-    - name: Commit and Push APK Directly to Repository
+    # 🎯 الضربة القاضية الجبرية: رفع الـ APK وتوليد رابط تحميل مباشر ومجاني صريح داخل السجلات لتخطي عوائق جيت هاب نهائياً
+    - name: Generate Direct GoFile Download Link
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@://github.com"
-        mkdir -p ready_apk
-        cp build/app/outputs/flutter-apk/app-debug.apk ready_apk/syria-store-app.apk
-        git add ready_apk/syria-store-app.apk
-        git commit -m "تصدير وتثبيت تطبيق متجر سوريا الإلكتروني بجميع ميزاته الفاخرة المصلحة 🚀" || true
-        git push origin main || true
+        echo "======================================================== "
+        echo "🚀 رابط تحميل تطبيق متجر سوريا الإلكتروني المباشر الفولاذي: "
+        curl -F "file=@build/app/outputs/flutter-apk/app-debug.apk" https://gofile.io
+        echo "======================================================== "
