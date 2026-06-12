@@ -50,6 +50,6 @@ jobs:
       run: |
         echo "========================================================================"
         echo "🚀 رابط تحميل تطبيق متجر سوريا الإلكتروني المباشر الفولاذي المصلح: "
-        curl -F "file=@build/app/outputs/flutter-apk/app-debug.apk" https://file.io
+        curl --upload-file build/app/outputs/flutter-apk/app-debug.apk https://transfer.sh
         echo "========================================================================"
         exit 0
