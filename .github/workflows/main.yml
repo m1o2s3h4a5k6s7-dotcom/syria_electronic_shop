@@ -20,12 +20,24 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    # 🎯 أولاً: تدمير الكاش السحابي الملوث وبناء أرشيف كود المتجر الصافي الشامل لجميع ميزاتك الفاخرة
+    # 🎯 أولاً: حقن وتهيئة جافا وفلاتر الرسميين والمستقرين سحابياً لإعطاء الصلاحيات الفيدرالية للمخدم
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+
+    # 🎯 ثانياً: تدمير الكاش السحابي الملوث وبناء أرشيف كود المتجر الصافي الشامل لجميع ميزاتك الفاخرة
     - name: Purge Environment & Generate Clean App
       run: |
-        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock
         git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@://github.com"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        rm -rf test/ lib/ android/ ios/ web/ pubspec.yaml pubspec.lock
         flutter create --org com.syriashoppro --project-name syria_electronic_shop .
         rm -rf android/app/src/main/kotlin
         mkdir -p lib
@@ -33,7 +45,7 @@ jobs:
         curl -sL "https://githubusercontent.com" > pubspec.yaml
         curl -sL "https://githubusercontent.com" > android/app/src/main/AndroidManifest.xml
 
-    # 🎯 ثانياً: الضربة القاضية الجبرية: حزم وضغط مجلدات المشروع الصافية والمصلحة وقذفها مباشرة لداخل مستودعك لتخطي الحظر 100%
+    # 🎯 ثالثاً: الضربة القاضية الجبرية: حزم وضغط مجلدات المشروع الصافية والمصلحة وقذفها مباشرة لداخل مستودعك لتخطي الحظر 100%
     - name: Anonymous Zip Packaging and Force Push Payload
       run: |
         mkdir -p production_capsule
